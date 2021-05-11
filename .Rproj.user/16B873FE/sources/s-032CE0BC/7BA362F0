@@ -1,0 +1,25 @@
+{
+    "id": "7BA362F0",
+    "path": "Y://MBH_Ningaloo_Parks/PtCloates/3.Get_Inclusion_probabilities.R",
+    "project_path": "PtCloates/3.Get_Inclusion_probabilities.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1620287657147.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "tempName": "Untitled1",
+        "cursorPosition": "170,36",
+        "scrollLine": "144"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1620290892,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1620290892728,
+    "read_only": false,
+    "read_only_alternatives": []
+}
