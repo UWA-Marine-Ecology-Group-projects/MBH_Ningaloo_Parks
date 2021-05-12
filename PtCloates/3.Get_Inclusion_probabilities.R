@@ -87,37 +87,37 @@ writeRaster( catB, file=paste0(paste(d.dir, paste("Bathy_cuts" , study, platform
 # And their numbers of drops
 
 #Bathy.quant <- c(0,0.20, 0.66, 1)
-hist(rast$slope)
-slope.quant <- c(0,0.3, 0.7, 1)
-slope.cuts <- quantile(rast$slope, slope.quant)#c( -Inf,0.02,0.04,0.08,0.16,Inf)
-slope.cuts # -200 -149 -118  -86 
-#trying to make it so there is no hand-picking (except for the hand-picked function)
-tmp <- cumsum( slope.quant)
-tmp
-#Bathy.targetNums <- rep( floor( 18/8), 4)#floor( ( tmp / sum( tmp))[-1] * 200)#rep( 40, 5)#c( 20,20,30,65,65)
-slope.targetNums <- rep(floor( ( tmp / sum( tmp))[-1] * sum(straw.nums)))
-slope.targetProps <-  slope.targetNums / sum( slope.targetNums)
-slope.targetProps
-
-# might need to alter these proportions by hand, so that the middle interval is better represented, as all structures fall within that interval
-
-
-#### Proportion of potential sites in each zone
-
-Dat_small <- dat[!is.na( dat$slope),]
-tmp <- colSums( Dat_small[,c("inNP", "outNP")], na.rm=TRUE) 
-#tmp[2] <- tmp[2] - tmp[1] # so similar amount of sites in SPZ and MUZ
-props <- tmp / nrow( Dat_small)
-props <- props / sum( props) # 1 UP TO HERE
-
-
-#### Get Bathy cut points ----
-
-catS <- cut( rast$slope, breaks=tpi.cuts, na.rm=TRUE)
-
-plot( catS); plot( zones$All, border = "black", add=TRUE) 
-
-writeRaster( catS, file=paste0(paste(d.dir, paste("slope_cuts" , study, platform, design.version, sep='-'), sep='/'), ".tif"), overwrite = TRUE)
+# hist(rast$slope)
+# slope.quant <- c(0,0.3, 0.7, 1)
+# slope.cuts <- quantile(rast$slope, slope.quant)#c( -Inf,0.02,0.04,0.08,0.16,Inf)
+# slope.cuts # -200 -149 -118  -86 
+# #trying to make it so there is no hand-picking (except for the hand-picked function)
+# tmp <- cumsum( slope.quant)
+# tmp
+# #Bathy.targetNums <- rep( floor( 18/8), 4)#floor( ( tmp / sum( tmp))[-1] * 200)#rep( 40, 5)#c( 20,20,30,65,65)
+# slope.targetNums <- rep(floor( ( tmp / sum( tmp))[-1] * sum(straw.nums)))
+# slope.targetProps <-  slope.targetNums / sum( slope.targetNums)
+# slope.targetProps
+# 
+# # might need to alter these proportions by hand, so that the middle interval is better represented, as all structures fall within that interval
+# 
+# 
+# #### Proportion of potential sites in each zone
+# 
+# Dat_small <- dat[!is.na( dat$slope),]
+# tmp <- colSums( Dat_small[,c("inNP", "outNP")], na.rm=TRUE) 
+# #tmp[2] <- tmp[2] - tmp[1] # so similar amount of sites in SPZ and MUZ
+# props <- tmp / nrow( Dat_small)
+# props <- props / sum( props) # 1 UP TO HERE
+# 
+# 
+# #### Get Bathy cut points ----
+# 
+# catS <- cut( rast$slope, breaks=tpi.cuts, na.rm=TRUE)
+# 
+# plot( catS); plot( zones$All, border = "black", add=TRUE) 
+# 
+# writeRaster( catS, file=paste0(paste(d.dir, paste("slope_cuts" , study, platform, design.version, sep='-'), sep='/'), ".tif"), overwrite = TRUE)
 
 
 
@@ -159,47 +159,57 @@ plot( catT); plot( zones$All, border = "black", add=TRUE)
 writeRaster( catT, file=paste0(paste(d.dir, paste("Tpi_cuts" , study, platform, design.version, sep='-'), sep='/'), ".tif"), overwrite = TRUE)
 
 
+#### Join Bathy and TPI ----
+
+catT2 <- catT * 3
+catAll <- catB + catT2
+plot(catAll)
+
+h <- hist(catAll, breaks = c(4,5,6,7,8,9,10,11,12), freq = F)
+sum(h$density)
 
 #### Get inclusion probabiltites ----
+hist(catT)
 
 # get bathy target props
-Bathy.targetProps <- c(0.25,0.25,0.25,0.25) 
+#Bathy.targetProps <- c(0.3,0.3,0.4) 
+TPI.targetProps <- c(0.4,0.3,0.3)
 #Bathy.targetProps <- c(0.3, 0.4, 0.3) 
 #Bathy.targetProps <- c(0.1, 0.4, 0.5) 
 #Bathy.targetProps <- Bathy.targetProps
 #Bathy.targetProps2 <- c(1)
-Bathy.targetProps2 <- c(0, 0.9, 0.1)
-Bathy.targetProps3 <- c(0.5,0.5)
-Bathy.targetProps4 <- c(1)
+# Bathy.targetProps2 <- c(0, 0.9, 0.1)
+# Bathy.targetProps3 <- c(0.5,0.5)
+# Bathy.targetProps4 <- c(1)
 
 
 # initial raster from strata raster --
-inclProbs <- catB
+inclProbs <- catT
 plot(inclProbs)
 
 # Inclusion probs --
 
 
-for( zz in c( "g1", "g2", "g3", "g4", "g5", "g6", "g7", "g8", "g9", "cs", "cz", "os", "oz")){
+for( zz in c("inNP", "outNP")){
   print( zz)
   # if( zz == "os")
   #   zoneID <- extract( x=catB, y=zones$os, cellnumbers=TRUE)
   # zoneID <- extract( x=catB, y=zones$MUZ-zones$NPZ, cellnumbers=TRUE)
   #else
-  zoneID <- extract( x=catB, y=zones[[zz]], cellnumbers=TRUE)
-  propsOfstrata <- table( catB@data@values[zoneID[[1]][,"cell"]])
+  zoneID <- extract( x=catT, y=zones[[zz]], cellnumbers=TRUE)
+  propsOfstrata <- table( catT@data@values[zoneID[[1]][,"cell"]])
   propsOfstrata <- propsOfstrata / sum( propsOfstrata)
   if(length(propsOfstrata) == 4)
-    tmp <- Bathy.targetProps / propsOfstrata #the desired inclusion probs (unstandardised)
-  else
-    if(length(propsOfstrata) == 3)
-      tmp <- Bathy.targetProps2 / propsOfstrata #the desired inclusion probs (unstandardised)
-  else
-    if(length(propsOfstrata) == 2)
-      tmp <- Bathy.targetProps3 / propsOfstrata #the desired inclusion probs (unstandardised)
-  else 
-    tmp <- Bathy.targetProps4 / propsOfstrata #the desired inclusion probs (unstandardised)
-  for( ii in 1:length( propsOfstrata)){
+    tmp <- TPI.targetProps / propsOfstrata #the desired inclusion probs (unstandardised)
+  # else
+  #   if(length(TPI.targetProps) == 3)
+  #     tmp <- Bathy.targetProps2 / propsOfstrata #the desired inclusion probs (unstandardised)
+  # else
+  #   if(length(TPI.targetProps) == 2)
+  #     tmp <- Bathy.targetProps3 / propsOfstrata #the desired inclusion probs (unstandardised)
+  # else 
+  #   tmp <- TPI.targetProps / propsOfstrata #the desired inclusion probs (unstandardised)
+    for( ii in 1:length( propsOfstrata)){
     inclProbs[zoneID[[1]][,"cell"]][zoneID[[1]][,"value"]==ii] <- tmp[ii]
   }
   inclProbs[zoneID[[1]][,"cell"]][is.na( inclProbs[zoneID[[1]][,"cell"]])] <- 0
@@ -211,33 +221,13 @@ plot( inclProbs)
 
 
 #standardising so that the zone totals are correct according to straw.props | straw.nums
-g1zone <- extract( x=catB, y=zones$g1, cellnumbers=TRUE)
-g2zone <- extract( x=catB, y=zones$g2, cellnumbers=TRUE)
-g3Zone <- extract( x=catB, y=zones$g3, cellnumbers=TRUE)
-g4Zone <- extract( x=catB, y=zones$g4, cellnumbers=TRUE)
-g5Zone <- extract( x=catB, y=zones$g5, cellnumbers=TRUE)
-g6Zone <- extract( x=catB, y=zones$g6, cellnumbers=TRUE)
-g7Zone <- extract( x=catB, y=zones$g7, cellnumbers=TRUE)
-g8Zone <- extract( x=catB, y=zones$g8, cellnumbers=TRUE)
-g9Zone <- extract( x=catB, y=zones$g9, cellnumbers=TRUE)
-csZone <- extract( x=catB, y=zones$cs, cellnumbers=TRUE)
-czZone <- extract( x=catB, y=zones$cz, cellnumbers=TRUE)
-osZone <- extract( x=catB, y=zones$os, cellnumbers=TRUE)
-ozZone <- extract( x=catB, y=zones$oz, cellnumbers=TRUE)
+inNPzone <- extract( x=catT, y=zones$inNP, cellnumbers=TRUE)
+outNPzone <- extract( x=catT, y=zones$outNP, cellnumbers=TRUE)
 
-inclProbs@data@values[g1zone[[1]][,'cell']] <- inclProbs@data@values[g1zone[[1]][,'cell']] * straw.props["g1"]
-inclProbs@data@values[g2zone[[1]][,'cell']] <- inclProbs@data@values[g2zone[[1]][,'cell']] * straw.props["g2"]
-inclProbs@data@values[g3Zone[[1]][,'cell']] <- inclProbs@data@values[g3Zone[[1]][,'cell']] * straw.props["g3"]
-inclProbs@data@values[g4Zone[[1]][,'cell']] <- inclProbs@data@values[g4Zone[[1]][,'cell']] * straw.props["g4"]
-inclProbs@data@values[g5Zone[[1]][,'cell']] <- inclProbs@data@values[g5Zone[[1]][,'cell']] * straw.props["g5"]
-inclProbs@data@values[g6Zone[[1]][,'cell']] <- inclProbs@data@values[g6Zone[[1]][,'cell']] * straw.props["g6"]
-inclProbs@data@values[g7Zone[[1]][,'cell']] <- inclProbs@data@values[g7Zone[[1]][,'cell']] * straw.props["g7"]
-inclProbs@data@values[g8Zone[[1]][,'cell']] <- inclProbs@data@values[g8Zone[[1]][,'cell']] * straw.props["g8"]
-inclProbs@data@values[g9Zone[[1]][,'cell']] <- inclProbs@data@values[g9Zone[[1]][,'cell']] * straw.props["g9"]
-inclProbs@data@values[csZone[[1]][,'cell']] <- inclProbs@data@values[csZone[[1]][,'cell']] * straw.props["cs"]
-inclProbs@data@values[czZone[[1]][,'cell']] <- inclProbs@data@values[czZone[[1]][,'cell']] * straw.props["cz"]
-inclProbs@data@values[osZone[[1]][,'cell']] <- inclProbs@data@values[osZone[[1]][,'cell']] * straw.props["os"]
-inclProbs@data@values[ozZone[[1]][,'cell']] <- inclProbs@data@values[ozZone[[1]][,'cell']] * straw.props["oz"]
+
+inclProbs@data@values[inNPzone[[1]][,'cell']] <- inclProbs@data@values[inNPzone[[1]][,'cell']] * straw.props["inNP"]
+inclProbs@data@values[outNPzone[[1]][,'cell']] <- inclProbs@data@values[outNPzone[[1]][,'cell']] * straw.props["outNP"]
+
 
 
 plot(inclProbs)
