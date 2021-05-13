@@ -12,9 +12,9 @@ rm(list = ls())
 # Set names ----
 study <- "PtCloates-MBH"
 
-platform <- "Bruvs"
+platform <- "BOSS"
 
-design.version <- "v1"
+design.version <- "v2"
 
 
 # Directories ----
@@ -36,7 +36,7 @@ zones <- readRDS(paste(d.dir, "Zones_PtCloates.RDS", sep='/'))
 
 # straw number for each zone
 
-straw.nums <- c(12, 12)  # for BRUVs - numbers of drops rest w structure + caut with structure,cau wout str, open w str, open wout str
+straw.nums <- c(25, 25)  # for BRUVs - numbers of drops rest w structure + caut with structure,cau wout str, open w str, open wout str
 #straw.nums <- c(6,6,6,6,6,6,8,6,6,20,28,12,28) # for BOSS
 straw.props <- straw.nums / sum( straw.nums)
 straw.props
@@ -159,21 +159,14 @@ plot( catT); plot( zones$All, border = "black", add=TRUE)
 writeRaster( catT, file=paste0(paste(d.dir, paste("Tpi_cuts" , study, platform, design.version, sep='-'), sep='/'), ".tif"), overwrite = TRUE)
 
 
-#### Join Bathy and TPI ----
 
-catT2 <- catT * 3
-catAll <- catB + catT2
-plot(catAll)
-
-h <- hist(catAll, breaks = c(4,5,6,7,8,9,10,11,12), freq = F)
-sum(h$density)
 
 #### Get inclusion probabiltites ----
 hist(catT)
 
 # get bathy target props
 #Bathy.targetProps <- c(0.3,0.3,0.4) 
-TPI.targetProps <- c(0.4,0.3,0.3)
+TPI.targetProps <- c(0.3,0.35,0.35)
 #Bathy.targetProps <- c(0.3, 0.4, 0.3) 
 #Bathy.targetProps <- c(0.1, 0.4, 0.5) 
 #Bathy.targetProps <- Bathy.targetProps
@@ -199,7 +192,7 @@ for( zz in c("inNP", "outNP")){
   zoneID <- extract( x=catT, y=zones[[zz]], cellnumbers=TRUE)
   propsOfstrata <- table( catT@data@values[zoneID[[1]][,"cell"]])
   propsOfstrata <- propsOfstrata / sum( propsOfstrata)
-  if(length(propsOfstrata) == 4)
+  #if(length(propsOfstrata) == 4)
     tmp <- TPI.targetProps / propsOfstrata #the desired inclusion probs (unstandardised)
   # else
   #   if(length(TPI.targetProps) == 3)
@@ -218,7 +211,7 @@ for( zz in c("inNP", "outNP")){
 inclProbs@data@values[inclProbs@data@values %in% c(0,1,2,3,4,5,6,7,8)] <- NA  #cheats way to crop
 plot( inclProbs)
 
-
+cellStats(inclProbs, 'sum')
 
 #standardising so that the zone totals are correct according to straw.props | straw.nums
 inNPzone <- extract( x=catT, y=zones$inNP, cellnumbers=TRUE)
@@ -231,6 +224,7 @@ inclProbs@data@values[outNPzone[[1]][,'cell']] <- inclProbs@data@values[outNPzon
 
 
 plot(inclProbs)
+cellStats(inclProbs, 'sum')
 
 
 writeRaster( inclProbs, file=paste0(paste(d.dir, paste("inclProbs" , study, platform, design.version, sep='-'), sep='/'), ".tif"), overwrite = TRUE)
