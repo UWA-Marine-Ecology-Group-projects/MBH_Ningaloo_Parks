@@ -24,11 +24,11 @@ r.dir <- paste(w.dir, "rasters", sep='/')
 
 study <- "PtCloates-MBH"
 
-platform <- "Bruvs"
+platform <- "BOSS"
 
-design.version <- "v1"
+design.version <- "v2"
 
-total.no.deployments <- "12_deployments"
+total.no.deployments <- "50_deployments"
 
 
 
@@ -55,7 +55,7 @@ lega
 
 
 # Read inclusion probabilities ----
-inclProbs <- raster(paste(d.dir, "inclProbs-PtCloates-MBH-Bruvs-v1.tif", sep='/'))
+inclProbs <- raster(paste(d.dir, "inclProbs-PtCloates-MBH-BOSS-v2.tif", sep='/'))
 plot(inclProbs)
 
 # test dissagregating inclusion probs ----
@@ -93,8 +93,8 @@ altInclProbs <- alterInclProbs(legacy.sites = lega,
 
 
 
-plot(altInclProbs)
-class(altInclProbs)
+# plot(altInclProbs)
+# class(altInclProbs)
 
 #visualise
 image( x=unique( potsmat[,1]), y=unique( potsmat[,2]),
@@ -118,6 +118,10 @@ coordinates(aIP) <- ~x+y
 gridded(aIP) <- TRUE
 altIncProbs <- raster(aIP)
 plot(altIncProbs)
+cellStats(altIncProbs, 'sum')
+# aggregate raster
+altip <- aggregate(altIncProbs, 10)
+cellStats(altip, 'sum')
+plot(altip)
 
-
-writeRaster( altIncProbs, file=paste0(paste(d.dir, paste("altIncProbs" , study, platform, design.version, sep='-'), sep='/'), ".tif"), overwrite = TRUE)
+writeRaster( altip, file=paste0(paste(d.dir, paste("altIncProbs" , study, platform, design.version, sep='-'), sep='/'), ".tif"), overwrite = TRUE)
