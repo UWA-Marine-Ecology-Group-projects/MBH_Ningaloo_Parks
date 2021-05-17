@@ -148,7 +148,8 @@ site <- "Ningaloo_Parks"
 design <- "200BOSS"
 version <- "v2"
 
-writeOGR(samp, o.dir, paste(site, design, version, sep='-'), driver = "ESRI Shapefile", overwrite = T)
+writeOGR(remaining.sites, o.dir, paste(site, design, version, sep='-'), driver = "ESRI Shapefile", overwrite = T)
+
 
 
 
