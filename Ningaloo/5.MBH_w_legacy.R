@@ -32,7 +32,7 @@ o.dir <- paste(w.dir, "outputs", sep='/')
 # Read in the inclusion probs ----
 # cov.cuts <- raster(paste(d.dir, "Tpi_cuts-PtCloates-MBH-BOSS-v1.tif", sep='/'))
 # plot(cov.cuts)
-inclProbs <- raster(paste(d.dir, "inclProbs-Ningaloo_Parks-BOSS-v1.tif", sep='/'))
+inclProbs <- raster(paste(d.dir, "altIncProbs-Ningaloo_Parks-BOSS-v2.tif", sep='/'))
 plot(inclProbs)
 inclProbs <- setValues( inclProbs, values( inclProbs) / sum( values( inclProbs), na.rm=TRUE))
 plot(inclProbs)
@@ -50,11 +50,12 @@ cellStats(rootInclProbs, 'sum')
 cellStats(rootInclProbs, 'sum')
 plot(rootInclProbs)
 
+inclProbs <- rootInclProbs
 
 # Read data ----
 rast <- readRDS(paste(d.dir, "rasters_Ningaloo_Parks.RDS", sep='/'))
 #if( class( BRUVS) != "SpatialPointsDataFrame")
-#Deans <- SpatialPointsDataFrame( coords=Deans[,c("Longitude","Latitude")], data=Deans, proj4string = CRS( proj4string( zones[[1]])))
+legacy <- readOGR(paste(s.dir, "remaining_legacy.shp", sep='/'))
 #proj4string(Deans) <- proj4string(swrast$bathy)
 
 
@@ -63,14 +64,39 @@ rast <- readRDS(paste(d.dir, "rasters_Ningaloo_Parks.RDS", sep='/'))
 ip <- as.data.frame(inclProbs, xy=T)
 head(ip)
 
-samp<- quasiSamp( n=200, dimension=2,
+200-12 # total sites - lagacy
+
+samp<- quasiSamp( n=188, dimension=2,
                   potential.sites = ip[,c("x","y")],
-                  inclusion.probs=ip$inclProbs.Ningaloo_Parks.BOSS.v1,
-                  nSampsToConsider=20000)
+                  inclusion.probs=ip$altIncProbs.Ningaloo_Parks.BOSS.v2,
+                  nSampsToConsider=30000)
 
 plot(inclProbs)
 points( samp[,c("x","y")], pch=20, cex=0.3, col = "black") 
+head(samp)
+plot(legacy, pch=20, col='red', add=T)
 
+# join sites and name them ----
+samp$type <- 'MBH'
+head(samp)
+coordinates(samp) <- ~x+y
+
+legacy$type <- 'legacy'
+head(legacy)
+
+allsites <- union(samp, legacy)
+head(allsites)
+
+ID <- paste(1:200)
+allsites$uniqueID <- ID
+head(allsites)
+allsites$type <- as.factor(allsites$type)
+
+plot(inclProbs)
+plot(allsites, pch = 20, col=allsites$type, add=T)
+
+proj4string(rast$depth)
+proj4string(allsites) <- proj4string(rast$depth)
 
 ## Check how far apart they are ---
 ## Get CRS in utm ----
@@ -89,7 +115,7 @@ max(dist1)
 min(dist1[dist1 > 0]) # minimum distance other than 0
 
 ## p1 ----
-p1_matrix <- gWithinDistance(p1u, dist = 50, byid = TRUE)
+p1_matrix <- gWithinDistance(p1u, dist = 100, byid = TRUE)
 diag(p1_matrix) <- NA
 p1_matrix
 
@@ -103,22 +129,16 @@ v1 <- colSums(p1_matrix, na.rm=TRUE) == 0
 p1u[v1, ] # 24 features left
 
 remaining.sites <- p1u[v1, ]
-remaining.sites <- spTransform(remaining.sites, proj4string(legacy))
+remaining.sites <- spTransform(remaining.sites, proj4string(allsites))
 head(remaining.sites)
 
 # plot --
 plot(inclProbs, main = "Inclusion probabilities")
-plot(cov.cuts, main = "TPI cuts")
-plot(rast$tpi, main = "TPI")
-plot(zones$All, add=T)
 remaining.sites$type  <- as.factor(remaining.sites$type)
 remaining.sites$zone  <- as.factor(remaining.sites$zone)
 plot(remaining.sites, pch=20, add=T)
 plot(remaining.sites, col=remaining.sites$type, pch = 20, add=T) # 41
 # rename zone
-levels(remaining.sites$zone)[levels(remaining.sites$zone)=="inN"] <- "inNP"
-levels(remaining.sites$zone)[levels(remaining.sites$zone)=="out"] <- "outNP"
-levels(remaining.sites$zone)
 head(remaining.sites)
 
 
@@ -126,7 +146,7 @@ head(remaining.sites)
 ## Save --
 site <- "Ningaloo_Parks"
 design <- "200BOSS"
-version <- "v1"
+version <- "v2"
 
 writeOGR(samp, o.dir, paste(site, design, version, sep='-'), driver = "ESRI Shapefile", overwrite = T)
 
