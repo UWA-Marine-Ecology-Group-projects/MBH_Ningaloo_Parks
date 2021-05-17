@@ -30,9 +30,9 @@ o.dir <- paste(w.dir, "outputs", sep='/')
 ####    NPZ 6   ####
 
 # Read in the inclusion probs ----
-cov.cuts <- raster(paste(d.dir, "Tpi_cuts-PtCloates-MBH-Bruvs-v1.tif", sep='/'))
+cov.cuts <- raster(paste(d.dir, "Tpi_cuts-PtCloates-MBH-BOSS-v5.tif", sep='/'))
 plot(cov.cuts)
-inclProbs <- raster(paste(d.dir, "altIncProbs-PtCloates-MBH-Bruvs-v3.tif", sep='/'))
+inclProbs <- raster(paste(d.dir, "altIncProbs-PtCloates-MBH-BOSS-v5.tif", sep='/'))
 plot(inclProbs)
 inclProbs <- setValues( inclProbs, values( inclProbs) / sum( values( inclProbs), na.rm=TRUE))
 plot(inclProbs)
@@ -44,25 +44,26 @@ rootInclProbs <- inclProbs
 
 
 #rootInclProbs <- setValues( rootInclProbs, sqrt( values( rootInclProbs)))
-rootInclProbs <- setValues( rootInclProbs, values( rootInclProbs)*36)
+rootInclProbs <- setValues( rootInclProbs, values( rootInclProbs)*50)
 cellStats(rootInclProbs, 'sum')
 
 cellStats(rootInclProbs, 'sum')
 plot(rootInclProbs)
 
+inclProbs <- rootInclProbs
 
 # Read data ----
-zones <- readRDS(paste(d.dir, "Zones_PtCloates.RDS", sep='/')) # this one in different folder
+zones <- readRDS(paste(d.dir, "Zones_PtCloates_v5.RDS", sep='/')) # this one in different folder
 #Deans <- readRDS( "DeansPoints_forinNOutMP-d3.RDS")
-rast <- readRDS(paste(d.dir, "rasters_PtCloates.RDS", sep='/'))
+rast <- readRDS(paste(d.dir, "rasters_PtCloates_v5.RDS", sep='/'))
 #if( class( BRUVS) != "SpatialPointsDataFrame")
 #Deans <- SpatialPointsDataFrame( coords=Deans[,c("Longitude","Latitude")], data=Deans, proj4string = CRS( proj4string( zones[[1]])))
 #proj4string(Deans) <- proj4string(swrast$bathy)
-straw.nums <- readRDS(paste(d.dir, "StrawmanNumbers_PtCloates-MBH_Bruvs_v3.RDS", sep ='/'))
+straw.nums <- readRDS(paste(d.dir, "StrawmanNumbers_PtCloates-MBH_BOSS_v5.RDS", sep ='/'))
 straw.nums
 
 # change straw nums to account for legacy sites
-straw.nums[1] <- 18-1
+straw.nums[1] <- 25-1
 straw.nums
 
 ############################
@@ -141,7 +142,7 @@ proj4string(newSites) <- proj4string(rast$depth)
 allsites <- raster::union(newSites, legacy)
 head(allsites)
 
-ID <- paste(1:36)
+ID <- paste(1:50)
 allsites$uniqueID <- ID
 head(allsites)
 
@@ -165,7 +166,7 @@ max(dist1)
 min(dist1[dist1 > 0]) # minimum distance other than 0
 
 ## p1 ----
-p1_matrix <- gWithinDistance(p1u, dist = 400, byid = TRUE)
+p1_matrix <- gWithinDistance(p1u, dist = 150, byid = TRUE)
 diag(p1_matrix) <- NA
 p1_matrix
 
@@ -181,6 +182,7 @@ p1u[v1, ] # 24 features left
 remaining.sites <- p1u[v1, ]
 remaining.sites <- spTransform(remaining.sites, proj4string(legacy))
 head(remaining.sites)
+plot(remaining.sites)
 
 # plot --
 plot(inclProbs, main = "Inclusion probabilities")
@@ -199,8 +201,8 @@ head(remaining.sites)
 
 ## Save --
 site <- "Pt-Cloates"
-design <- "36Bruvs"
-version <- "v3"
+design <- "50BOSS"
+version <- "v5"
 
 writeOGR(remaining.sites, o.dir, paste(site, design, version, sep='-'), driver = "ESRI Shapefile", overwrite = T)
 

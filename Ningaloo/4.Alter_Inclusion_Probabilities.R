@@ -8,6 +8,7 @@ library( raster)
 library( MBHdesign)
 library(dplyr)
 
+
 # clear environment ----
 rm(list = ls())
 
@@ -25,7 +26,7 @@ study <- "Ningaloo_Parks"
 
 platform <- "BOSS"
 
-design.version <- "v1"
+design.version <- "v2"
 
 total.no.deployments <- "200deployments"
 
@@ -34,12 +35,12 @@ total.no.deployments <- "200deployments"
 # Read legacy sites ----
 legacy <- readOGR(paste(s.dir, "remaining_legacy.shp", sep='/'))
 proj4string(legacy)
-plot(legacy, pch=20, add=T)
+plot(legacy, pch=20)
 
 legacys <- as.data.frame(legacy)
 legacyss <- legacys[,c(5,6)]
 legacyss
-legacyss <- legacyss[c(1,10),]
+#legacyss <- legacyss[c(1,8),]
 # in ascending longitude
 # legacyss <- arrange(legacyss, coords.x1)
 # names(legacyss) <- c("x", "y")
@@ -56,15 +57,48 @@ lega
 # Read inclusion probabilities ----
 inclProbs <- raster(paste(d.dir, "inclProbs-Ningaloo_Parks-BOSS-v1.tif", sep='/'))
 plot(inclProbs)
+plot(legacy, pch = 20, add=T)
 cellStats(inclProbs, 'sum')
-# test <- inclProbs/350.135
-# cellStats(test, 'sum')
-# inclProbs <- test
+inclProbs <- inclProbs/350.135
+cellStats(inclProbs, 'sum')
 
+
+# make sum of inc probs the number of samples needed ---
+rootInclProbs <- inclProbs
+#rootInclProbs <- setValues( rootInclProbs, sqrt( values( rootInclProbs)))
+rootInclProbs <- setValues( rootInclProbs, values( rootInclProbs)*200)
+cellStats(rootInclProbs, 'sum')
+plot(rootInclProbs)
+
+inclProbs <- rootInclProbs
+plot(inclProbs)
+cellStats(inclProbs, 'sum')
+
+
+### Split incl probs ----
+e <- drawExtent()
+inclProbs <- crop(inclProbs, e)
+plot(inclProbs)
+plot(legacy, pch = 20, add=T)
+
+legacy1 <- raster::extract(inclProbs, legacy, sp = T)
+legacy1
+# remove rows w na
+legacy1 <- legacy1[!is.na(legacy1$inclProbs.Ningaloo_Parks.BOSS.v1), ]
+legacy1 # 5 points left
+
+# make a matrix of legacy ----
+legacys <- as.data.frame(legacy1)
+legacyss <- legacys[,c(5,6)]
+legacyss
+lega <- as.matrix(legacyss)
+class(lega)
+lega
 
 # test dissagregating inclusion probs ----
-inclProbs <- raster::disaggregate(inclProbs, 15)
+inclProbs <- raster::disaggregate(inclProbs, 10)
 plot(inclProbs)
+cellStats(inclProbs, 'sum')
 
 # potential sites ----
 pot.sites <- as.data.frame(inclProbs, xy = TRUE)
@@ -90,7 +124,7 @@ length(ip)
 # alter inclProbs test1----
 altInclProbs <- alterInclProbs(legacy.sites = lega, 
                                potential.sites = potsmat,
-                               #n = 40,
+                               #n = 200,
                                inclusion.probs = ip)
 #mc.cores = 6)
 class(lega)
@@ -104,14 +138,14 @@ inclProbs
 # class(altInclProbs)
 
 #visualise
-# image( x=unique( potsmat[,1]), y=unique( potsmat[,2]),
-#        z=matrix( ip, nrow=100, ncol=43),
-#        main="Inclusion Probabilities (Undadjusted)",
-#        ylab=colnames( potsmat)[2], xlab=colnames( potsmat)[1])
+image( x=unique( potsmat[,1]), y=unique( potsmat[,2]),
+        z=matrix( ip, nrow=100, ncol=43),
+        main="Inclusion Probabilities (Undadjusted)",
+        ylab=colnames( potsmat)[2], xlab=colnames( potsmat)[1])
 
 image( x=unique( potsmat[,1]), y=unique( potsmat[,2]),
        #z=matrix( altInclProbs, nrow=3405, ncol=7215),
-       z=matrix( altInclProbs, nrow=227, ncol=481),
+       z=matrix( altInclProbs, nrow=167, ncol=294),
        main="Adjusted Inclusion Probabilities",
        ylab=colnames( potsmat)[2], xlab=colnames( potsmat)[1])
 

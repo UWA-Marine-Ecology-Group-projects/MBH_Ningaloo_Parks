@@ -21,13 +21,14 @@ d.dir <- paste(w.dir, "data", sep='/')
 s.dir <- paste(w.dir, "shapefiles", sep='/')
 r.dir <- paste(w.dir, "rasters", sep='/')
 
-dirx <- "Y:/MBH_Ningaloo_Parks"
+dirx <- "/home/anitag"
 
 
 ## Load bathy and park data ----
 
 # load West coast bathy --
-b <- raster(paste(dirx,  "rasters/depth-Ningaloo-Parks-MBH.tif", sep='/'))
+b <- raster(paste("rasters/Ningaloo-bathy-v5.tif", sep='/'))
+
 plot(b)
 
 
@@ -35,7 +36,7 @@ plot(b)
 npin <- readOGR(paste(s.dir, "Point-Cloates-inNP.shp", sep='/'))
 plot(npin, add=T)
 
-npout <- readOGR(paste(s.dir, "Point-Cloates-outNP.shp", sep='/'))
+npout <- readOGR(paste(s.dir, "Point-Cloates-outNPsouth.shp", sep='/'))
 plot(npout, add=T)
 
 # crop bathy to zones ----
@@ -70,7 +71,7 @@ plot(sea.terrain)
 names(sea.terrain) <- c("depth","slope", "tpi", "flowdir", "roughness", "aspect")
 
 # save derivatives of sea terrain ----
-writeRaster(sea.terrain, paste(r.dir, "PtCloates_sea-terrain.tif", sep='/'))
+writeRaster(sea.terrain, paste(r.dir, "PtCloates_sea-terrain-v5.tif", sep='/'), overwrite=T)
 
 
 

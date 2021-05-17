@@ -24,11 +24,11 @@ r.dir <- paste(w.dir, "rasters", sep='/')
 
 study <- "PtCloates-MBH"
 
-platform <- "Bruvs"
+platform <- "BOSS"
 
-design.version <- "v4"
+design.version <- "v5"
 
-total.no.deployments <- "27deployments"
+total.no.deployments <- "50deployments"
 
 
 
@@ -55,7 +55,7 @@ lega
 
 
 # Read inclusion probabilities ----
-inclProbs <- raster(paste(d.dir, "inclProbs-PtCloates-MBH-Bruvs-v4.tif", sep='/'))
+inclProbs <- raster(paste(d.dir, "inclProbs-PtCloates-MBH-BOSS-v5.tif", sep='/'))
 plot(inclProbs)
 
 # test dissagregating inclusion probs ----
@@ -95,7 +95,7 @@ altInclProbs <- alterInclProbs(legacy.sites = lega,
 
 # plot(altInclProbs)
 # class(altInclProbs)
-
+inclProbs
 #visualise
 image( x=unique( potsmat[,1]), y=unique( potsmat[,2]),
        z=matrix( ip, nrow=100, ncol=43),
@@ -103,7 +103,7 @@ image( x=unique( potsmat[,1]), y=unique( potsmat[,2]),
        ylab=colnames( potsmat)[2], xlab=colnames( potsmat)[1])
 
 image( x=unique( potsmat[,1]), y=unique( potsmat[,2]),
-       z=matrix( altInclProbs, nrow=660, ncol=810),
+       z=matrix( altInclProbs, nrow=670, ncol=780),
        main="Adjusted Inclusion Probabilities",
        ylab=colnames( potsmat)[2], xlab=colnames( potsmat)[1])
 

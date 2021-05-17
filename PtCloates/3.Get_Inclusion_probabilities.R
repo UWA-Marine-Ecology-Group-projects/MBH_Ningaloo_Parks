@@ -12,9 +12,9 @@ rm(list = ls())
 # Set names ----
 study <- "PtCloates-MBH"
 
-platform <- "Bruvs"
+platform <- "BOSS"
 
-design.version <- "v4"
+design.version <- "v5"
 
 
 # Directories ----
@@ -29,14 +29,14 @@ r.dir <- paste(w.dir, "rasters", sep='/')
 
 # Read in data ----
 
-dat <- readRDS(paste(d.dir,"Data_PtCloates.RDS", sep ='/'))
-rast <- readRDS(paste(d.dir, "rasters_PtCloates.RDS", sep='/'))
-zones <- readRDS(paste(d.dir, "Zones_PtCloates.RDS", sep='/'))
+dat <- readRDS(paste(d.dir,"Data_PtCloates_v5.RDS", sep ='/'))
+rast <- readRDS(paste(d.dir, "rasters_PtCloates_v5.RDS", sep='/'))
+zones <- readRDS(paste(d.dir, "Zones_PtCloates_v5.RDS", sep='/'))
 
 
 # straw number for each zone
 
-straw.nums <- c(13, 14)  # for BRUVs - numbers of drops rest w structure + caut with structure,cau wout str, open w str, open wout str
+straw.nums <- c(25, 25)  # for BRUVs - numbers of drops rest w structure + caut with structure,cau wout str, open w str, open wout str
 #straw.nums <- c(6,6,6,6,6,6,8,6,6,20,28,12,28) # for BOSS
 straw.props <- straw.nums / sum( straw.nums)
 straw.props

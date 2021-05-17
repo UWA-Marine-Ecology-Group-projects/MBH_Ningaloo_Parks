@@ -30,8 +30,8 @@ r.dir <- paste(w.dir, "rasters", sep='/')
 
 # Read polygons ----
 inNP <- readOGR(paste(s.dir, "Point-Cloates-inNP.shp", sep = '/'))
-outNP <- readOGR(paste(s.dir, "Point-Cloates-outNP.shp", sep = '/'))
-
+outNP <- readOGR(paste(s.dir, "Point-Cloates-outNPsouth.shp", sep = '/'))
+names(outNP) <- c("id", "Name")
 
 # check crs --
 proj4string(inNP)
@@ -61,17 +61,19 @@ plot( zones$outNP, add=TRUE, col='blue')
 
 # Save zones rds ----
 
-saveRDS(zones, file= paste0(paste(d.dir, paste("Zones" , study, sep='_'), sep='/'), ".RDS"))
+saveRDS(zones, file= paste0(paste(d.dir, paste("Zones" , study, "v5", sep='_'), sep='/'), ".RDS"))
 
 
 ## Read raster data ----
-ders <- stack(paste(r.dir, "PtCloates_sea-terrain.tif", sep ='/'))
+ders <- stack(paste(r.dir, "PtCloates_sea-terrain-v5.tif", sep ='/'))
 plot(ders)
+plot(ders$PtCloates_sea.terrain.v5.1)
+plot(zones$All, add=T)
 names(ders) <-  c("depth","slope", "tpi", "flowdir", "roughness", "aspect")
 plot(ders)
 
 ders <- mask(ders, zones$All)
-plot(ders)
+plot(ders$depth)
 
 # Save rasters rds ----
 rasterfiles <- list()
@@ -80,7 +82,7 @@ rasterfiles$slope <- ders$slope
 rasterfiles$tpi <- ders$tpi
 
 # Save raster data ----
-saveRDS(rasterfiles, file= paste0(paste(d.dir, paste("rasters" , study, sep='_'), sep='/'), ".RDS"))
+saveRDS(rasterfiles, file= paste0(paste(d.dir, paste("rasters" , study, "v5", sep='_'), sep='/'), ".RDS"))
 
 
 
@@ -126,7 +128,7 @@ head(Dat)
 
 
 # Save raster dfs rds ----
-saveRDS(Dat, file= paste0(paste(d.dir, paste("Data" , study, sep='_'), sep='/'), ".RDS"))
+saveRDS(Dat, file= paste0(paste(d.dir, paste("Data" , study, "v5", sep='_'), sep='/'), ".RDS"))
 
 
 
