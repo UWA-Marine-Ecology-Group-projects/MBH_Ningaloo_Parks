@@ -30,9 +30,9 @@ o.dir <- paste(w.dir, "outputs", sep='/')
 ####    NPZ 6   ####
 
 # Read in the inclusion probs ----
-cov.cuts <- raster(paste(d.dir, "Tpi_cuts-PtCloates-MBH-Bruvs-v1.tif", sep='/'))
-plot(cov.cuts)
-inclProbs <- raster(paste(d.dir, "altIncProbs-PtCloates-MBH-Bruvs-v3.tif", sep='/'))
+# cov.cuts <- raster(paste(d.dir, "Tpi_cuts-PtCloates-MBH-BOSS-v1.tif", sep='/'))
+# plot(cov.cuts)
+inclProbs <- raster(paste(d.dir, "inclProbs-Ningaloo_Parks-BOSS-v1.tif", sep='/'))
 plot(inclProbs)
 inclProbs <- setValues( inclProbs, values( inclProbs) / sum( values( inclProbs), na.rm=TRUE))
 plot(inclProbs)
@@ -44,7 +44,7 @@ rootInclProbs <- inclProbs
 
 
 #rootInclProbs <- setValues( rootInclProbs, sqrt( values( rootInclProbs)))
-rootInclProbs <- setValues( rootInclProbs, values( rootInclProbs)*36)
+rootInclProbs <- setValues( rootInclProbs, values( rootInclProbs)*200)
 cellStats(rootInclProbs, 'sum')
 
 cellStats(rootInclProbs, 'sum')
@@ -52,18 +52,86 @@ plot(rootInclProbs)
 
 
 # Read data ----
-zones <- readRDS(paste(d.dir, "Zones_PtCloates.RDS", sep='/')) # this one in different folder
-#Deans <- readRDS( "DeansPoints_forinNOutMP-d3.RDS")
-rast <- readRDS(paste(d.dir, "rasters_PtCloates.RDS", sep='/'))
+rast <- readRDS(paste(d.dir, "rasters_Ningaloo_Parks.RDS", sep='/'))
 #if( class( BRUVS) != "SpatialPointsDataFrame")
 #Deans <- SpatialPointsDataFrame( coords=Deans[,c("Longitude","Latitude")], data=Deans, proj4string = CRS( proj4string( zones[[1]])))
 #proj4string(Deans) <- proj4string(swrast$bathy)
-straw.nums <- readRDS(paste(d.dir, "StrawmanNumbers_PtCloates-MBH_Bruvs_v3.RDS", sep ='/'))
-straw.nums
 
-# change straw nums to account for legacy sites
-straw.nums[1] <- 18-1
-straw.nums
+
+### MBH without legacy ----
+
+ip <- as.data.frame(inclProbs, xy=T)
+head(ip)
+
+samp<- quasiSamp( n=200, dimension=2,
+                  potential.sites = ip[,c("x","y")],
+                  inclusion.probs=ip$inclProbs.Ningaloo_Parks.BOSS.v1,
+                  nSampsToConsider=20000)
+
+plot(inclProbs)
+points( samp[,c("x","y")], pch=20, cex=0.3, col = "black") 
+
+
+## Check how far apart they are ---
+## Get CRS in utm ----
+crs1 <- CRS("+init=epsg:32750") # WGS 84 / UTM zone 50S
+
+
+## transform the points into UTM --
+p1u <- spTransform(allsites, crs1)
+
+## calculate if 2 points fall within 400 m of eachother ----
+# https://gis.stackexchange.com/questions/102796/remove-points-within-x-distance
+
+dist1 <- gDistance(p1u, byid =T)
+dist1
+max(dist1)
+min(dist1[dist1 > 0]) # minimum distance other than 0
+
+## p1 ----
+p1_matrix <- gWithinDistance(p1u, dist = 50, byid = TRUE)
+diag(p1_matrix) <- NA
+p1_matrix
+
+# extract the upper triangular part of matrix and use the column sums as a criterion to remove the points:
+
+p1_matrix[lower.tri(p1_matrix, diag=TRUE)] <- NA
+p1_matrix
+
+colSums(p1_matrix, na.rm=TRUE) == 0
+v1 <- colSums(p1_matrix, na.rm=TRUE) == 0
+p1u[v1, ] # 24 features left
+
+remaining.sites <- p1u[v1, ]
+remaining.sites <- spTransform(remaining.sites, proj4string(legacy))
+head(remaining.sites)
+
+# plot --
+plot(inclProbs, main = "Inclusion probabilities")
+plot(cov.cuts, main = "TPI cuts")
+plot(rast$tpi, main = "TPI")
+plot(zones$All, add=T)
+remaining.sites$type  <- as.factor(remaining.sites$type)
+remaining.sites$zone  <- as.factor(remaining.sites$zone)
+plot(remaining.sites, pch=20, add=T)
+plot(remaining.sites, col=remaining.sites$type, pch = 20, add=T) # 41
+# rename zone
+levels(remaining.sites$zone)[levels(remaining.sites$zone)=="inN"] <- "inNP"
+levels(remaining.sites$zone)[levels(remaining.sites$zone)=="out"] <- "outNP"
+levels(remaining.sites$zone)
+head(remaining.sites)
+
+
+
+## Save --
+site <- "Ningaloo_Parks"
+design <- "200BOSS"
+version <- "v1"
+
+writeOGR(samp, o.dir, paste(site, design, version, sep='-'), driver = "ESRI Shapefile", overwrite = T)
+
+
+
 
 ############################
 ####  Spatial sample of new sites ----
@@ -76,6 +144,9 @@ straw.nums
 ####  Set the seed for reproducability
 #set.seed( 777)
 #### HAVE NOT BEEN ABLE TO MAKE THIS FUNCTION WORK ----
+
+# no. samples
+
 newSites <- list(inNP = NULL, outNP = NULL)
 
 for( zz in c("inNP", "outNP")){
@@ -141,7 +212,7 @@ proj4string(newSites) <- proj4string(rast$depth)
 allsites <- raster::union(newSites, legacy)
 head(allsites)
 
-ID <- paste(1:36)
+ID <- paste(1:50)
 allsites$uniqueID <- ID
 head(allsites)
 
@@ -165,7 +236,7 @@ max(dist1)
 min(dist1[dist1 > 0]) # minimum distance other than 0
 
 ## p1 ----
-p1_matrix <- gWithinDistance(p1u, dist = 400, byid = TRUE)
+p1_matrix <- gWithinDistance(p1u, dist = 50, byid = TRUE)
 diag(p1_matrix) <- NA
 p1_matrix
 
@@ -199,8 +270,8 @@ head(remaining.sites)
 
 ## Save --
 site <- "Pt-Cloates"
-design <- "36Bruvs"
-version <- "v3"
+design <- "50BOSS"
+version <- "v2"
 
 writeOGR(remaining.sites, o.dir, paste(site, design, version, sep='-'), driver = "ESRI Shapefile", overwrite = T)
 

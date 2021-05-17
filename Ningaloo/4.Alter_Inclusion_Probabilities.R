@@ -1,4 +1,3 @@
-
 #### Alter inclusion probabilities for legacy sites ----
 
 
@@ -22,25 +21,25 @@ r.dir <- paste(w.dir, "rasters", sep='/')
 
 # Information for files ---
 
-study <- "PtCloates-MBH"
+study <- "Ningaloo_Parks"
 
-platform <- "Bruvs"
+platform <- "BOSS"
 
-design.version <- "v3"
+design.version <- "v1"
 
-total.no.deployments <- "36deployments"
+total.no.deployments <- "200deployments"
 
 
 
 # Read legacy sites ----
-legacy <- read.csv(paste(s.dir, "legacy_Point_Cloates.csv", sep='/'))
-coordinates(legacy) <- ~x+y
-#legacy <- readOGR(paste(s.dir, "Legacy_sites.shp", sep='/'))
+legacy <- readOGR(paste(s.dir, "remaining_legacy.shp", sep='/'))
 proj4string(legacy)
 plot(legacy, pch=20, add=T)
 
 legacys <- as.data.frame(legacy)
-legacyss <- legacys[,c(2,3)]
+legacyss <- legacys[,c(5,6)]
+legacyss
+legacyss <- legacyss[c(1,10),]
 # in ascending longitude
 # legacyss <- arrange(legacyss, coords.x1)
 # names(legacyss) <- c("x", "y")
@@ -55,11 +54,16 @@ lega
 
 
 # Read inclusion probabilities ----
-inclProbs <- raster(paste(d.dir, "inclProbs-PtCloates-MBH-Bruvs-v3.tif", sep='/'))
+inclProbs <- raster(paste(d.dir, "inclProbs-Ningaloo_Parks-BOSS-v1.tif", sep='/'))
 plot(inclProbs)
+cellStats(inclProbs, 'sum')
+# test <- inclProbs/350.135
+# cellStats(test, 'sum')
+# inclProbs <- test
+
 
 # test dissagregating inclusion probs ----
-inclProbs <- raster::disaggregate(inclProbs, 10)
+inclProbs <- raster::disaggregate(inclProbs, 15)
 plot(inclProbs)
 
 # potential sites ----
@@ -89,21 +93,25 @@ altInclProbs <- alterInclProbs(legacy.sites = lega,
                                #n = 40,
                                inclusion.probs = ip)
 #mc.cores = 6)
+class(lega)
+class(potsmat)
+class(ip)
 
-
+inclProbs
 
 
 # plot(altInclProbs)
 # class(altInclProbs)
 
 #visualise
-image( x=unique( potsmat[,1]), y=unique( potsmat[,2]),
-       z=matrix( ip, nrow=100, ncol=43),
-       main="Inclusion Probabilities (Undadjusted)",
-       ylab=colnames( potsmat)[2], xlab=colnames( potsmat)[1])
+# image( x=unique( potsmat[,1]), y=unique( potsmat[,2]),
+#        z=matrix( ip, nrow=100, ncol=43),
+#        main="Inclusion Probabilities (Undadjusted)",
+#        ylab=colnames( potsmat)[2], xlab=colnames( potsmat)[1])
 
 image( x=unique( potsmat[,1]), y=unique( potsmat[,2]),
-       z=matrix( altInclProbs, nrow=660, ncol=810),
+       #z=matrix( altInclProbs, nrow=3405, ncol=7215),
+       z=matrix( altInclProbs, nrow=227, ncol=481),
        main="Adjusted Inclusion Probabilities",
        ylab=colnames( potsmat)[2], xlab=colnames( potsmat)[1])
 

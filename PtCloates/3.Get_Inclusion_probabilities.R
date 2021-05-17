@@ -12,9 +12,9 @@ rm(list = ls())
 # Set names ----
 study <- "PtCloates-MBH"
 
-platform <- "BOSS"
+platform <- "Bruvs"
 
-design.version <- "v2"
+design.version <- "v3"
 
 
 # Directories ----
@@ -36,7 +36,7 @@ zones <- readRDS(paste(d.dir, "Zones_PtCloates.RDS", sep='/'))
 
 # straw number for each zone
 
-straw.nums <- c(25, 25)  # for BRUVs - numbers of drops rest w structure + caut with structure,cau wout str, open w str, open wout str
+straw.nums <- c(18, 18)  # for BRUVs - numbers of drops rest w structure + caut with structure,cau wout str, open w str, open wout str
 #straw.nums <- c(6,6,6,6,6,6,8,6,6,20,28,12,28) # for BOSS
 straw.props <- straw.nums / sum( straw.nums)
 straw.props
@@ -166,7 +166,7 @@ hist(catT)
 
 # get bathy target props
 #Bathy.targetProps <- c(0.3,0.3,0.4) 
-TPI.targetProps <- c(0.3,0.35,0.35)
+TPI.targetProps <- c(0.3,0.3,0.4)
 #Bathy.targetProps <- c(0.3, 0.4, 0.3) 
 #Bathy.targetProps <- c(0.1, 0.4, 0.5) 
 #Bathy.targetProps <- Bathy.targetProps
@@ -189,7 +189,7 @@ for( zz in c("inNP", "outNP")){
   #   zoneID <- extract( x=catB, y=zones$os, cellnumbers=TRUE)
   # zoneID <- extract( x=catB, y=zones$MUZ-zones$NPZ, cellnumbers=TRUE)
   #else
-  zoneID <- extract( x=catT, y=zones[[zz]], cellnumbers=TRUE)
+  zoneID <- raster::extract( x=catT, y=zones[[zz]], cellnumbers=TRUE)
   propsOfstrata <- table( catT@data@values[zoneID[[1]][,"cell"]])
   propsOfstrata <- propsOfstrata / sum( propsOfstrata)
   #if(length(propsOfstrata) == 4)
@@ -214,8 +214,8 @@ plot( inclProbs)
 cellStats(inclProbs, 'sum')
 
 #standardising so that the zone totals are correct according to straw.props | straw.nums
-inNPzone <- extract( x=catT, y=zones$inNP, cellnumbers=TRUE)
-outNPzone <- extract( x=catT, y=zones$outNP, cellnumbers=TRUE)
+inNPzone <- raster::extract( x=catT, y=zones$inNP, cellnumbers=TRUE)
+outNPzone <- raster::extract( x=catT, y=zones$outNP, cellnumbers=TRUE)
 
 
 inclProbs@data@values[inNPzone[[1]][,'cell']] <- inclProbs@data@values[inNPzone[[1]][,'cell']] * straw.props["inNP"]
