@@ -26,9 +26,9 @@ study <- "PtCloates-MBH"
 
 platform <- "Bruvs"
 
-design.version <- "v3"
+design.version <- "v4"
 
-total.no.deployments <- "36deployments"
+total.no.deployments <- "27deployments"
 
 
 
@@ -55,7 +55,7 @@ lega
 
 
 # Read inclusion probabilities ----
-inclProbs <- raster(paste(d.dir, "inclProbs-PtCloates-MBH-Bruvs-v3.tif", sep='/'))
+inclProbs <- raster(paste(d.dir, "inclProbs-PtCloates-MBH-Bruvs-v4.tif", sep='/'))
 plot(inclProbs)
 
 # test dissagregating inclusion probs ----

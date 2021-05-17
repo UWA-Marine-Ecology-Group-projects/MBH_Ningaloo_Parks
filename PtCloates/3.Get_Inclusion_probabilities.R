@@ -14,7 +14,7 @@ study <- "PtCloates-MBH"
 
 platform <- "Bruvs"
 
-design.version <- "v3"
+design.version <- "v4"
 
 
 # Directories ----
@@ -36,7 +36,7 @@ zones <- readRDS(paste(d.dir, "Zones_PtCloates.RDS", sep='/'))
 
 # straw number for each zone
 
-straw.nums <- c(18, 18)  # for BRUVs - numbers of drops rest w structure + caut with structure,cau wout str, open w str, open wout str
+straw.nums <- c(13, 14)  # for BRUVs - numbers of drops rest w structure + caut with structure,cau wout str, open w str, open wout str
 #straw.nums <- c(6,6,6,6,6,6,8,6,6,20,28,12,28) # for BOSS
 straw.props <- straw.nums / sum( straw.nums)
 straw.props
