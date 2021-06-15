@@ -7,7 +7,7 @@ library( rgdal)
 library( sp)
 library( raster)
 library( MBHdesign)
-library(dplyr)
+library( dplyr)
 
 # clear environment ----
 rm(list = ls())
@@ -24,11 +24,11 @@ r.dir <- paste(w.dir, "rasters", sep='/')
 
 study <- "PtCloates-MBH"
 
-platform <- "BOSS"
+platform <- "Bruvs"
 
 design.version <- "v5"
 
-total.no.deployments <- "50deployments"
+total.no.deployments <- "27deployments"
 
 
 
@@ -122,6 +122,14 @@ cellStats(altIncProbs, 'sum')
 # aggregate raster
 altip <- aggregate(altIncProbs, 10)
 cellStats(altip, 'sum')
+## Make sure alt inc probs add up to n = 27 ----
+cellStats(altip, 'sum')
+altip <- setValues(altip, values(altip)*27)
+cellStats(altip, 'sum')
+
 plot(altip)
 
 writeRaster( altip, file=paste0(paste(d.dir, paste("altIncProbs" , study, platform, design.version, sep='-'), sep='/'), ".tif"), overwrite = TRUE)
+
+
+
