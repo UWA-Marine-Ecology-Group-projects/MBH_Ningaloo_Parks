@@ -38,9 +38,10 @@ proj4string(legacy)
 plot(legacy, pch=20)
 
 legacys <- as.data.frame(legacy)
-legacyss <- legacys[,c(5,6)]
+head(legacys)
+legacyss <- legacys[,c(3,4)]
 legacyss
-legacyss <- legacyss[c(2:13),]
+legacyss <- legacyss[c(2:12),]
 # class(legacyss)
 legacyss2 <- as.data.frame(cbind(legacyss[,2], legacyss[,1]))
 legacyss2
@@ -74,6 +75,8 @@ cellStats(inclProbs, 'sum')
 # make sum of inc probs the number of samples needed ---
 rootInclProbs <- inclProbs
 #rootInclProbs <- setValues( rootInclProbs, sqrt( values( rootInclProbs)))
+
+### SET inclusion Probs to number of samples ----
 rootInclProbs <- setValues( rootInclProbs, values( rootInclProbs)*200)
 cellStats(rootInclProbs, 'sum')
 plot(rootInclProbs)
@@ -222,4 +225,18 @@ le
 writeOGR(le, s.dir, "remaining_legacy", drive = "ESRI Shapefile", overwrite = T)
 
 
+## MAKE sure altered inc probs add up to the amount of samples ----
+plot(altip)
+cellStats(altip, 'sum')
+
+altip <- altip/2.00000 # first to 1
+cellStats(altip, 'sum')
+
+## Make sure alt inc probs add up to n = 200 --
+altip <- setValues(altip, values(altip)*200)
+cellStats(altip, 'sum')
+
 writeRaster( altip, file=paste0(paste(d.dir, paste("altIncProbs" , study, platform, design.version, sep='-'), sep='/'), ".tif"), overwrite = TRUE)
+
+
+

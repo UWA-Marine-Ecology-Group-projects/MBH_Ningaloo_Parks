@@ -36,14 +36,19 @@ r.dir <- paste(w.dir, "rasters", sep='/')
 # Read in data ----
 
 dat <- readRDS(paste(d.dir,"Data_Ningaloo_Parks.RDS", sep ='/'))
-rast <- readRDS(paste(d.dir, "rasters_Ningaloo_Parks.RDS", sep='/'))
+#rast <- readRDS(paste(d.dir, "rasters_Ningaloo_Parks.RDS", sep='/'))
+rast <- stack(paste(r.dir, "Ningaloo_predictors.tif", sep='/'))
+
+names(rast) <- c("depth", "slope", "tpi")
 
 # separate covariates ----
 d <- rast$depth
 s <- rast$slope
 
+
 plot(d)
 plot(s)
+
 
 hist(d)
 hist(s)
